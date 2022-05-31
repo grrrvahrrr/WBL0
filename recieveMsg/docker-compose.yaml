@@ -1,0 +1,57 @@
+version: "3.7"
+services:  
+
+  postgres:
+    image: postgres:14.0
+    container_name: wbpostgres
+    restart: unless-stopped
+    ports:
+      - 5433:5432
+    volumes:     
+      - /home/deus/db/data:/var/lib/postgresql/data     
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres     
+      PGDATA: /var/lib/postgresql/data
+    networks:
+      - wbnet
+
+  migrate:
+        image: migrate/migrate
+        container_name: migratewbdb
+        networks:
+            - wbnet
+        volumes:
+            - ./migrations:/migrations
+        command: ["-path", "/migrations", "-database",  "postgres://wbuser:wb@postgres/wbl0db?sslmode=disable", "up"]
+        links: 
+            - postgres 
+  
+  nats-streaming:
+    image: nats-streaming
+    container_name: wbnats
+    command:
+      - "-store"
+      - file
+      - "-dir"
+      - /data/msg
+    volumes:
+      - "./natsstore:/data"
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    networks:
+      - wbnet
+  
+  redis:
+    image: "redis:alpine"
+    container_name: wbcache
+    ports:
+      - 6379:6379
+    command: redis-server   
+    networks:
+      - wbnet
+
+
+networks:
+  wbnet:

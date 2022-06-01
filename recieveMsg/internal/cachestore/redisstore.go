@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"time"
+	"wbl0/recieveMsg/internal/cacheport"
 	"wbl0/recieveMsg/internal/dbport"
 	"wbl0/recieveMsg/internal/entities"
 
@@ -11,12 +12,14 @@ import (
 	"github.com/go-redis/redis/v8"
 )
 
-type CacheStore struct {
+var _ cacheport.CacheStore = &RedisStore{}
+
+type RedisStore struct {
 	cache *cache.Cache
 	db    *dbport.DbPort
 }
 
-func NewCache(db *dbport.DbPort) *CacheStore {
+func NewRedis(db *dbport.DbPort) *RedisStore {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
 		Password: "", // no password set
@@ -27,13 +30,13 @@ func NewCache(db *dbport.DbPort) *CacheStore {
 		LocalCache: cache.NewTinyLFU(1000, time.Minute),
 	})
 
-	return &CacheStore{
+	return &RedisStore{
 		cache: rCache,
 		db:    db,
 	}
 }
 
-func (cs *CacheStore) CacheSet(ctx context.Context, key string, order entities.Order) error {
+func (cs *RedisStore) CacheSet(ctx context.Context, key string, order entities.Order) error {
 	p, err := json.Marshal(order)
 	if err != nil {
 		return err
@@ -50,7 +53,7 @@ func (cs *CacheStore) CacheSet(ctx context.Context, key string, order entities.O
 	return nil
 }
 
-func (cs *CacheStore) CacheGet(ctx context.Context, key string) (*entities.Order, error) {
+func (cs *RedisStore) CacheGet(ctx context.Context, key string) (*entities.Order, error) {
 	var value []byte
 	var order entities.Order
 	err := cs.cache.Get(ctx, key, &value)
@@ -65,7 +68,7 @@ func (cs *CacheStore) CacheGet(ctx context.Context, key string) (*entities.Order
 	return &order, nil
 }
 
-func (cs *CacheStore) CacheRestore(ctx context.Context, key string, orderId string) error {
+func (cs *RedisStore) CacheRestore(ctx context.Context, key string, orderId string) error {
 	order, err := cs.db.GetOrderInfo(ctx, orderId)
 	if err != nil {
 		return err

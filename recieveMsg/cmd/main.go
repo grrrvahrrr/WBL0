@@ -8,6 +8,7 @@ import (
 	"os/signal"
 
 	"wbl0/recieveMsg/internal/api"
+	"wbl0/recieveMsg/internal/cacheport"
 	"wbl0/recieveMsg/internal/cachestore"
 	"wbl0/recieveMsg/internal/database"
 	"wbl0/recieveMsg/internal/dbport"
@@ -30,7 +31,8 @@ func main() {
 	db := dbport.NewDataStorage(udf)
 
 	//Creating Cache Storage
-	cacheStore := cachestore.NewCache(db)
+	redisStore := cachestore.NewRedis(db)
+	cacheStore := cacheport.NewCacheStorage(redisStore)
 
 	//Nats streaming recieving msg
 	ns, err := natsstreaming.NewNatsStreaming(db, cacheStore)
@@ -54,6 +56,9 @@ func main() {
 
 	//Start Server
 	srv.Start()
+
+	//Hello
+	fmt.Println("Recieving messages!")
 
 	//Shutdown
 	<-ctx.Done()

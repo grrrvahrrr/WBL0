@@ -8,7 +8,6 @@ import (
 )
 
 const (
-	//port      = ":50051"
 	clusterID = "test-cluster"
 	clientID  = "msgSender"
 	model     = `{

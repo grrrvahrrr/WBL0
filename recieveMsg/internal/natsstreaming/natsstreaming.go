@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"wbl0/recieveMsg/internal/cachestore"
+	"wbl0/recieveMsg/internal/cacheport"
 	"wbl0/recieveMsg/internal/dbport"
 	"wbl0/recieveMsg/internal/entities"
 
@@ -21,10 +21,10 @@ type NatsStreaming struct {
 	sc         stan.Conn
 	sub        stan.Subscription
 	db         *dbport.DbPort
-	cachestore *cachestore.CacheStore
+	cachestore *cacheport.CachePort
 }
 
-func NewNatsStreaming(db *dbport.DbPort, cachestore *cachestore.CacheStore) (*NatsStreaming, error) {
+func NewNatsStreaming(db *dbport.DbPort, cachestore *cacheport.CachePort) (*NatsStreaming, error) {
 
 	sc, err := stan.Connect(
 		clusterID,

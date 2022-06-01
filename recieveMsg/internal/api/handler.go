@@ -3,34 +3,36 @@ package api
 import (
 	"context"
 	"fmt"
-	"wbl0/recieveMsg/internal/cachestore"
+	"wbl0/recieveMsg/internal/cacheport"
 	"wbl0/recieveMsg/internal/dbport"
 	"wbl0/recieveMsg/internal/entities"
 )
 
+//DTO here as well
+
 type Handlers struct {
-	cache   *cachestore.CacheStore
+	cache   *cacheport.CachePort
 	db      *dbport.DbPort
 	initRun bool
 }
 
-func NewHandlers(cache *cachestore.CacheStore, db *dbport.DbPort) *Handlers {
+func NewHandlers(cache *cacheport.CachePort, db *dbport.DbPort) *Handlers {
 	return &Handlers{
 		cache:   cache,
 		db:      db,
-		initRun: false,
+		initRun: true,
 	}
 }
 
 func (h *Handlers) GetOrderByIdHandler(ctx context.Context, orderId string) (*entities.Order, error) {
 	//Restore cache from db
 	key := fmt.Sprintf("order:%s", orderId)
-	if !h.initRun {
+	if h.initRun {
 		err := h.cache.CacheRestore(ctx, key, orderId)
 		if err != nil {
 			return nil, err
 		}
-		h.initRun = true
+		h.initRun = false
 	}
 
 	//Read order from cache

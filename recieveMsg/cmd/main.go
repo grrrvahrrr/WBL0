@@ -50,7 +50,7 @@ func main() {
 	go ns.WritingMsgRoutine(ctx, orderch)
 
 	//Front
-	h := api.NewHandlers(cacheStore, db)
+	h := api.NewHandlers(cacheStore)
 	router := api.NewApiChiRouter(h)
 	srv := server.NewServer(":3333", router)
 
@@ -65,6 +65,4 @@ func main() {
 	ns.SubClose()
 	srv.Stop()
 	cancel()
-	fmt.Println("Server shutdown.")
-
 }

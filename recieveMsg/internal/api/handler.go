@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"wbl0/recieveMsg/internal/cacheport"
-	"wbl0/recieveMsg/internal/dbport"
 	"wbl0/recieveMsg/internal/entities"
 )
 
@@ -12,14 +11,12 @@ import (
 
 type Handlers struct {
 	cache   *cacheport.CachePort
-	db      *dbport.DbPort
 	initRun bool
 }
 
-func NewHandlers(cache *cacheport.CachePort, db *dbport.DbPort) *Handlers {
+func NewHandlers(cache *cacheport.CachePort) *Handlers {
 	return &Handlers{
 		cache:   cache,
-		db:      db,
 		initRun: true,
 	}
 }

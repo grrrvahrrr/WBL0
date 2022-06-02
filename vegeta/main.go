@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"log"
+	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	vegeta "github.com/tsenart/vegeta/v12/lib"
@@ -15,22 +13,15 @@ func main() {
 	rate := vegeta.Rate{Freq: 100, Per: time.Second}
 	duration := 4 * time.Second
 
-	target := vegeta.Target{
-		Method: "POST",
-		URL:    "http://localhost:3333/order",
-	}
-
-	req, err := target.Request()
-	if err != nil {
-		log.Fatalln(err)
-	}
-
 	form := url.Values{}
 	form.Add("orderid", "b563feb7b2b84b6test")
 
-	req.PostForm = form
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Body = io.NopCloser(strings.NewReader(form.Encode()))
+	target := vegeta.Target{
+		Method: "POST",
+		URL:    "http://localhost:3333/order",
+		Header: http.Header{"Content-Type": []string{"application/x-www-form-urlencoded"}},
+		Body:   []byte(form.Encode()),
+	}
 
 	targeter := vegeta.NewStaticTargeter(target)
 	attacker := vegeta.NewAttacker()
